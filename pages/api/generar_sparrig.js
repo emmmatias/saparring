@@ -413,7 +413,6 @@ const handler = async (req, res) => {
         }
 
         try{
-
           connection.query(`CREATE TABLE IF NOT EXISTS pruebas (
             id VARCHAR(20),
             mail VARCHAR(255),

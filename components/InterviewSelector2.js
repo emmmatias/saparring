@@ -550,12 +550,12 @@ const generar_sparring = async () => {
         setvisible(true)
         let data = await response.json()
         data.message ? setdatamessage(data.message) : setdatamessage('Error, intente nuevamente')
+        setStep(2)
       }
   }catch(error){
     setvisible(true)
     setdatamessage(`${error}, intente nuevamente`)
   }
-  
 }
 
 const handledit = (event, index) => {
@@ -1297,11 +1297,11 @@ useEffect(() => {
                   (step == 6) ? (
                     <div>
                       {visible && (
-        <div style={style22.popup}>
-          <p>{datamessage}</p>
-          <button class="btn-primary" onClick={(e) => {setvisible(null); props.main()}}>cerrar</button>
-        </div>
-        )}
+                      <div style={style22.popup}>
+                        <p>{datamessage}</p>
+                        <button class="btn-primary" onClick={(e) => {setvisible(null); props.main()}}>cerrar</button>
+                      </div>
+                      )}
                     <div class="container">
               <div class="form-card">
                   <div class="form-header">
