@@ -1129,6 +1129,12 @@ useEffect(() => {
                 Generar Prueba
             </button>
         </div>
+        {visible && (
+                      <div style={style22.popup}>
+                        <p>{datamessage}</p>
+                        <button class="btn-primary" onClick={(e) => {setvisible(null); props.main()}}>cerrar</button>
+                      </div>
+                      )}
             </>
           )
         }
