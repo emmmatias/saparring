@@ -1,0 +1,143 @@
+.footer {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #485fc7;
+    color: white;
+    padding: 48px 0 24px 0;
+    margin-top: auto;
+    line-height: 1.6;
+    position: relative; /* Cambia a relative */
+    width: 100%;
+    bottom: 0; /* Agrega esta propiedad */
+  }
+  
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.footer-brand h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.footer-description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.footer-column h4 {
+    color: white;
+    font-size: 1rem;
+    margin: 0 0 16px 0;
+    font-weight: 500;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 8px;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.footer-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 24px 0;
+}
+
+.footer-bottom {
+    text-align: center;
+}
+
+.copyright {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.copyright a {
+    color: white;
+    text-decoration: none;
+}
+
+.copyright a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .footer{
+        position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+    }
+    
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .footer-column {
+        text-align: center;
+    }
+
+    .footer-brand {
+        justify-content: center;
+    }
+}
+::-webkit-scrollbar {
+    width: 12px; /* Ancho de la barra de desplazamiento */
+    height: 12px; /* Altura de la barra de desplazamiento horizontal */
+}
+
+/* Estilo para el fondo de la barra de desplazamiento */
+::-webkit-scrollbar-track {
+    background: #e6dfdf; /* Color del fondo */
+    border-radius: 10px; /* Esquinas redondeadas */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #485fc7; /* Color del pulgar */
+    border-radius: 10px; /* Esquinas redondeadas */
+    padding: 1px;
+}
+
+/* Efecto al pasar el ratón sobre el pulgar */
+::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color del pulgar al pasar el ratón */
+}

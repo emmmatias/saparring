@@ -1,0 +1,26 @@
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+.boxing-glove {
+    font-size: 1.2em;
+    margin-right: 2px;
+}
+.info-message {
+    background-color: #f0f8ff;
+    border: 1px solid #b8daff;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+.info-message i {
+    color: #17a2b8;
+    margin-right: 0.5rem;
+}
+.tabs li.is-disabled a {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
