@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import connection from "./db";
-import jwt from 'jsonwebtoken';
+import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import * as cookie from 'cookie'
 const SECRET_KEY = process.env.JWT_SECRET;
 let BaseUrl = process.env.BASE_URL
@@ -237,6 +237,11 @@ const handler = async (req, res) => {
     if(req.method === 'POST'){
        const {mail, candidato, id_prueba, empresa, fecha} = await JSON.parse(req.body)
        const token = jwt.sign({mail, candidato, id_prueba, empresa}, SECRET_KEY, { expiresIn: '4h' })
+       const [feedbaacks_previos] = await connection.query('select feedbacks from candidatos where mail = ?', [mail])
+       console.log(feedbaacks_previos[0])
+       let prev = JSON.parse(feedbaacks_previos[0].feedbacks).feedbacks
+       let newArr = [...new Set([...prev, id_prueba])]
+        await connection.query('UPDATE candidatos set feedbacks = ? where mail = ?', [JSON.stringify({feedbacks: newArr}), mail])
        notificar(mail, candidato, id_prueba, empresa, fecha, token)
        res.status(200).json({message: 'Mail enviado'})
     }else if(req.method === 'GET'){
@@ -255,8 +260,6 @@ const handler = async (req, res) => {
             let respuestas = extraerTextos(respuesta.feedbacks)
             let comentario = extraerpuntos_comntarios(respuesta.feedbacks)
             console.log('sssssssssssssssssssssssssssssss', comentario)
-            //let comentarios = extraerpuntos_comntarios(respuesta.feedbacks)
-            //let sugerencias = extraerpuntos_sugerencias(respuesta.feedbacks)
             let htmlstring = comentario.map((el, index) => {
                 return `
                     <div style="margin-bottom: 2%;">

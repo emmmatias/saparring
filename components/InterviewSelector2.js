@@ -216,6 +216,7 @@ function InterviewSelector(props) {
   const [agregar, setAgregar] = useState('')
   const [step, setStep] = useState(1)
   const [visible, setvisible] = useState(false)
+  const [loading3, setLoading3] = useState(false)
   const [candidatoApellido,setCandidatoApellido] = useState()
   const [horas, setHoras] = useState(0)
   const [comentarios, setComentarios] = useState('')
@@ -226,6 +227,8 @@ function InterviewSelector(props) {
   const [nueva_pregunta, setNueva_pregunta] = useState()
   const [Preguntas, setPreguntas] = useState([])
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [button_c, setButton_c] = useState()
   const [suggestion, setSuggestion] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [categorias, setCategorias] = useState([]);
@@ -294,7 +297,8 @@ const handleAddCategory2 = (e, val) => {
     const selectedTechs = [valor]
     //setSelectedTechnologies(prev => {[...prev, valor]});
     // Añadir nuevas tecnologías si no existen en la lista actual
-    const newTechs = selectedTechs.filter(tech => !allTechnologies.includes(tech));
+
+    const newTechs = selectedTechs.filter(tech => !selectedTechnologies.includes(tech));
     if (newTechs.length > 0) {
       setSelectedTechnologies(prev => [...prev, ...newTechs]);
     }
@@ -554,6 +558,7 @@ const generar_sparring = async () => {
       }
   }catch(error){
     setvisible(true)
+    setStep(2)
     setdatamessage(`${error}, intente nuevamente`)
   }
 }
@@ -592,6 +597,7 @@ const handleditoption = (event, indexPregunta, indexOpcion) => {
 }
 
 const guardarModif = async (e) => {
+  setLoading(true)
   e.preventDefault()
   let respose = await fetch('/api/editar_sparring',{
     method:'POST',
@@ -603,8 +609,12 @@ const guardarModif = async (e) => {
   if(respose.ok){
     let data = await respose.json()
     setMessage(data.message ? data.message : 'Cambios guardados')
+    setLoading(false)
+    setButton_c()
   }else{
     setMessage('Error al guardar edicion')
+    setLoading(false)
+    setButton_c()
   }
 }
 
@@ -615,6 +625,7 @@ console.log('result', result)
 
 
 const guardarCandidato = async () => {
+  setLoading3(true)
   let response = await fetch('/api/registro_candidato2',
     {
       method:'POST',
@@ -632,11 +643,13 @@ const guardarCandidato = async () => {
     }
   )
   if(response.ok){
+    setLoading3(false)
     let data = await response.json()
     setvisible(true)
     data.message ? setdatamessage(data.message) : setdatamessage('Error, reintente')
   }
   if(!response.ok){
+    setLoading3(false)
     let data = await response.json()
     setvisible(true)
     data.message ? setdatamessage(data.message) : setdatamessage('Error, reintente')
@@ -1120,10 +1133,6 @@ useEffect(() => {
         </div>
 
         <div class="btn-container">
-            <button disabled={true} class="btn btn-success" onclick="guardarConfiguracion()">
-                <span class="material-icons">save</span>
-                Guardar Configuración
-            </button>
             <button disabled={!(Preguntas.length > 0 && Preguntas[0].numero > 0)} class="btn btn-primary" onClick={(e)=>{setStep(3); generar_sparring()}}>
                 <span class="material-icons">play_arrow</span>
                 Generar Prueba
@@ -1172,10 +1181,10 @@ useEffect(() => {
                         <span class="material-icons">add</span>
                         Sumar Opción 
                     </button>
-                    <button class="btn btn-primary" onClick={(e) => {guardarModif(e)}}>
+                    {(loading == true && button_c == index) ? <button class="btn btn-primary" onClick={(e) => {guardarModif(e); setButton_c(index)}}>
                         <span class="material-icons">save</span>
                         Guardar cambios
-                    </button>
+                    </button> : <Loader/>}
                   </div>
                   </div>
                 )
@@ -1194,10 +1203,10 @@ useEffect(() => {
  className='textarea' key={index} onChange={(event) => handledit(event, index)} class="edit-field" rows="4" value={el.pregunta}/>
                   </div>
                   <div class="action-buttons" style={{display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "16px"}}>
-                    <button class="btn btn-primary" onclick="guardarCambios('desarrollo2')">
+                    {(loading == true && button_c == index) ? <Loader/> : <button class="btn btn-primary" onClick={(e) => {guardarModif(e); setButton_c(index)}}>
                         <span class="material-icons">save</span>
                         Guardar cambios
-                    </button>
+                    </button> }
                   </div>
                 </div>)
               }
@@ -1215,10 +1224,10 @@ useEffect(() => {
  className='textarea' key={index} onChange={(event) => handledit(event, index)} class="edit-field" rows="4" value={el.pregunta}/>
                   </div>
                   <div class="action-buttons" style={{display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "16px"}}>
-                    <button class="btn btn-primary" onclick="guardarCambios('desarrollo2')">
+                    {(loading == true && button_c == index )? <Loader/> : <button class="btn btn-primary" onClick={(e) => {guardarModif(e); setButton_c(index)}}>
                         <span class="material-icons">save</span>
                         Guardar cambios
-                    </button>
+                    </button> }
                   </div>
                 </div>)
               }
@@ -1236,10 +1245,10 @@ useEffect(() => {
  className='textarea' class="edit-field" onChange={(event) => handledit(event, index)} key={index} value={el.pregunta}/>
                   </div>
                   <div class="action-buttons" style={{display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "16px"}}>
-                    <button class="btn btn-primary" onclick="guardarCambios('desarrollo2')">
+                    {(loading == true && button_c == index) ? <Loader/>: <button class="btn btn-primary" onClick={(e) => {guardarModif(e); setButton_c(index)}}>
                         <span class="material-icons">save</span>
                         Guardar cambios
-                    </button>
+                    </button>}
                   </div>
                 </div>)
               }
@@ -1259,10 +1268,10 @@ useEffect(() => {
                   </div>
                   </div>
                   <div class="action-buttons" style={{display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "16px"}}>
-                    <button class="btn btn-primary" onclick="guardarCambios('desarrollo2')">
+                    {(loading == true && button_c == index) ? <Loader/>: <button class="btn btn-primary" onClick={(e) => {guardarModif(e); setButton_c(index)}}>
                         <span class="material-icons">save</span>
                         Guardar cambios
-                    </button>
+                    </button>}
                   </div>
                 </div>)
               }
@@ -1282,10 +1291,10 @@ useEffect(() => {
                   </div>
                   </div>
                   <div class="action-buttons" style={{display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "16px"}}>
-                    <button class="btn btn-primary" onclick="guardarCambios('desarrollo2')">
+                    {(loading == true && button_c == index) ? <Loader/> : <button class="btn btn-primary" onClick={(e) => {guardarModif(e); setButton_c(index)}}>
                         <span class="material-icons">save</span>
                         Guardar cambios
-                    </button>
+                    </button>}
                   </div>
                 </div>  )
               }
@@ -1490,7 +1499,7 @@ useEffect(() => {
                       <div style={{marginTop:'1%'}}>
                       <button class="btn-primary" type="button" onClick={(e) => {guardarCandidato(); props.main}}>
                           <span class="material-icons">save</span>
-                          <p>Guardar Candidato y Finalizar</p><br/><br/>
+                          <p>Guardar Candidato y Finalizar{loading3 && <Loader/>}</p><br/><br/>
                       </button>
                       
                       </div>

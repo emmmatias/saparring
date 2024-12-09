@@ -1,9 +1,8 @@
-import nodemailer from 'nodemailer';
 import connection from "./db";
-import jwt from 'jsonwebtoken';
+import jwt, { decode } from 'jsonwebtoken';
 import * as cookie from 'cookie'
-const SECRET_KEY = process.env.JWT_SECRET;
-
+import nodemailer from 'nodemailer';
+const SECRET_KEY = process.env.JWT_SECRET
 let BaseUrl = process.env.BASE_URL
 
 const notificar_alta = (email_admin, empresa, token) => {
@@ -131,99 +130,27 @@ const notificar_alta = (email_admin, empresa, token) => {
 
 }
 
-
 const handler = async (req, res) => {
-    if(req.method == 'POST'){
-        let data = JSON.parse(req.body)
-        const {
-            empresa,
-                cif,
-                direccion,
-                codigopostal,
-                provincia,
-                contraseña,
-                ciudad,
-                telefono_contacto,
-                email_contacto,
-                email_admin,
-                logo,
-                web,
-                reclutadores
-        } = data
-        let ress  = JSON.parse(reclutadores)
-        if(ress.reclutadores.length > 0){
-            let msj = []
-            for(let rec of ress.reclutadores){
-                const mensajes = {
-                    'descripción_empresa': `Empresa tecnológica`,
-                    'descripción_prueba': 'Esta prueba técnica ha sido diseñada meticulosamente para evaluar tus habilidades y conocimientos en desarrollo full stack. Durante las próximas 2 horas, te enfrentarás a una serie de desafíos que abarcan diversos aspectos del desarrollo de software moderno.<strong> Contará de tipo test, preguntas de desarrollo, retos de realización de código y discusión de código.',
-                    'reclutador': `${rec.reclutador_nombre}`,
-                    'siguientes_pasos': `${rec.reclutador_nombre} te llamará en un plazo de no más de 2 días para comentar la prueba y siguientes pasos.`,
-                    'mensaje_personal': `Si tienes alguna duda, puedes contactar a ${rec.reclutador_nombre}`,
-                    'contacto_reclutador': `${rec.reclutador_email}`,
-                    'reclutador_telefono': `${rec.reclutador_telefono}`
-                }
-                const reclutador = { reclutador_email: `${rec.reclutador_email}`, reclutador_nombre: `${rec.reclutador_nombre}` , mensajes: mensajes}
-                msj.push(reclutador)
-            }
-            try{
-                await connection.query(`CREATE TABLE IF NOT EXISTS empresas (
-                    id TEXT,
-                    empresa TEXT,
-                    cif VARCHAR(30) UNIQUE,
-                    direccion TEXT,
-                    codigopostal TEXT,
-                    provincia TEXT,
-                    ciudad TEXT,
-                    telefono_contacto TEXT,
-                    email_contacto TEXT,
-                    email_admin TEXT,
-                    logo LONGTEXT,
-                    web TEXT,
-                    reclutadores LONGTEXT,
-                    activo BOOLEAN,
-                    mail_verificado BOOLEAN,
-                    contraseña TEXT
-                    )`)
-                    
-                await connection.query(`
-                    INSERT INTO empresas (
-                    id,
-                    empresa,
-                    cif,
-                    direccion,
-                    codigopostal,
-                    provincia,
-                    ciudad,
-                    telefono_contacto,
-                    email_contacto,
-                    email_admin,
-                    logo,
-                    web,
-                    reclutadores, activo, mail_verificado, contraseña) VALUES (
-                    ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
-                    )`, [`${empresa}${email_admin}`,empresa,cif,direccion,codigopostal,provincia,ciudad,telefono_contacto,`${email_contacto}`,email_admin,logo,web,reclutadores,0,0, JSON.stringify({mensajes: msj})])
-                    
-                    const token = jwt.sign({ email_admin, empresa }, SECRET_KEY, { expiresIn: '5m' })
-                    
-                    notificar_alta(email_admin, empresa, token)
-                    
-                    return res.status(200).json({ message: 'Alta exitosa' })  
-    
-            }catch(error){
-                console.error(error)
-                return res.status(500).json({ message: error })
-            }
+
+    const { email_admin, empresa } = req.query
+
+    try{
+
+        const token = jwt.sign({ email_admin, empresa }, SECRET_KEY, { expiresIn: '5m' })
         
-        }
-        if(!ress.reclutadores.length > 0){
-            return res.status(500).json({ message: 'Debes añadir al menos un reclutador' })
+        if(email_admin && empresa){
+            notificar_alta(email_admin, empresa, token)
+            return res.status(200).json({ message: 'Revisa tu correo electrónico' })  
+        }else{
+            return res.status(404).json({ message: 'Hubo un error' })  
         }
 
-    }else{
-        res.setHeader('Allow', ['POST'])
-        return res.status(405).json({ error: 'Método no válido' })
+    }catch(error){
+
+        return res.status(400).json({ message: `Hubo un error:  ${error}` }) 
+
     }
+
 }
 
 export default handler

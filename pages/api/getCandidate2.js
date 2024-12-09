@@ -1,12 +1,13 @@
 import connection from "./db";
 import jwt, { decode } from 'jsonwebtoken';
+const SECRET_KEY = process.env.JWT_SECRET
 
 const handler = async (req, res) => {
     if(req.method == 'GET'){
         const { candidato, token } = req.query
+        
         try{
-
-            let decoded = jwt.verify(token)
+            let decoded = jwt.verify(token, SECRET_KEY)
             const [rows] = await connection.query('SELECT * FROM candidatos WHERE mail = ?', [candidato])
             if(rows.length > 0){
                 console.log('las rows de la consulta son:', rows)
@@ -14,8 +15,8 @@ const handler = async (req, res) => {
             }if(rows.length == 0){
                 res.status(404).json({message: 'No hay prueba para ese id'})
             }
-
         }catch(error){
+            console.log(error)
             return res.status(403).json({ message: 'TOKEN INVÁLIDO' })  
         }
 

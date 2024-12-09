@@ -11,11 +11,13 @@ const handler = async (req, res) => {
         let payload = jwt.decode(token)
         // el mail estara en payload.email_admin
         let email_admin = payload.email_admin
+        let empresa = payload.empresa
+        console.log('ESTA ES LA EMPRESAAAAAAA', empresa)
         let recluiter = payload.recluiter
         console.log('reccccccccccccccccccccc', recluiter)
         try{
             const decoded = jwt.verify(token, SECRET_KEY)
-            let tokenSession = jwt.sign({ email_admin, recluiter}, SECRET_KEY, { expiresIn: '4h' })
+            let tokenSession = jwt.sign({ email_admin, recluiter, empresa}, SECRET_KEY, { expiresIn: '4h' })
             await connection.query('UPDATE empresas SET mail_verificado = ?, activo = ? WHERE email_admin = ?', [1,1, email_admin])      
             res.setHeader('Set-Cookie', cookie.serialize('empresa', tokenSession, {
                 httpOnly: false,
@@ -29,6 +31,16 @@ const handler = async (req, res) => {
         }catch(error){
             console.error(error)
             res.setHeader('Cache-control', 'no-cache')
+            let tokenSession = {
+                email_admin,
+                empresa
+            }
+            res.setHeader('Set-Cookie', cookie.serialize('reenvio_alta', tokenSession, {
+                httpOnly: false,
+                secure: false,
+                maxAge: 60 * 60 * 4,
+                path: '/dash_empresa'
+                }))
             return res.redirect(302, '/login_error')
         }
 

@@ -33,11 +33,12 @@ const Dash_empresa = () => {
     const [mensajesConfig, setMensajesConfig] = useState([{value: 'Valor por defecto'},{value: 'Valor por defecto'},{value: 'Valor por defecto'},'Ana García'])
     const [config, setConfig] = useState()
     const [recluiter,setRecluiter] = useState()
-    const [mensaje1, setmensaje1] = useState()
-    const [mensaje2, setmensaje2] = useState()
-    const [mensaje3, setmensaje3] = useState()
-    const [mensaje4, setmensaje4] = useState()
-    const [login1,setlogin1] = useState(false)
+    const [selected, setSelected] = useState('edit')
+    const [datamessage, setdatamessage] = useState('')
+    const [visible, setvisible] = useState()
+    const [clicked, setClicked] = useState()
+    const [login1, setlogin1] = useState(false)
+    const [detailed, setDetailed] = useState('')
     const [descripción_empresa, setdescripción_empresa] = useState()
     const [descripción_prueba, setdescripción_prueba] = useState()
     const [reclutador, setreclutador] = useState()
@@ -61,7 +62,14 @@ const Dash_empresa = () => {
                 let recluiter = JSON.parse(data.data_user.contraseña).mensajes[0].reclutador_email
                 setRecluiter(recluiter)
                 login(data.data_user.email_admin, 'empresa')
-                //ahora user tiene el userData
+                ////////////////////////////////////////////////
+                const url = new URL(window.location.href)
+                const params = url.searchParams
+                console.log(params.get('prueba'))
+                if(params.get('prueba')){
+                    setPage('feedbacks')
+                    setDetailed(params.get('prueba'))
+                }
             }
         if(!response.ok){
             router.push('/')
@@ -99,7 +107,9 @@ const Dash_empresa = () => {
         setOpenSettings(true)
     }
 
-    const guardarConfig = async () => {
+    const guardarConfig = async (numero) => {
+        setClicked(numero)
+        setlogin1(true)
         console.log('guardando config')
         let response  = await fetch('/api/guardar_config', {
             method:'POST',
@@ -119,13 +129,18 @@ const Dash_empresa = () => {
             })
         })
         if(response.ok){
-            alert('Datos guardados')
+            setlogin1(false)
+            setvisible(true)
+            setdatamessage('Datos guardados')
         }else{
-            alert('Error al guardar')
+            setlogin1(false)
+            setvisible(true)
+            setdatamessage('Error al guardar')
         }
     }
-     const generarTexto = async (tipo) => {
+     const generarTexto = async (tipo, numero) => {
         setlogin1(true)
+        setClicked(numero)
         let response = await fetch('/api/generar_texto', {
             method:'POST',
             body: JSON.stringify({
@@ -180,8 +195,35 @@ const Dash_empresa = () => {
         setPage('feedbacks')
     }
 
+    const style22 = {
+        popup: {
+            display: 'block', /* Usar flex para centrar el contenido */
+            position: 'fixed', /* Fijo en la ventana */
+            zIndex: 1000, /* Por encima de otros elementos */
+            marginLeft: '35%',
+            width: '30%',
+            height: '20%',
+            marginTop: '20%', 
+            textAlign: 'center',
+            backgroundColor: 'white', /* Fondo semi-transparente */
+            borderColor: 'black',
+            alignItems: 'center',
+            BorderStyle: 'solid',
+            borderRadius: '10px',
+            boxShadow:'2px 2px 10px 2px rgba(0, 0, 0, 0.5)',
+            padding:'1%'
+        }
+      }
+
     return(
     <div >
+        {visible && (
+                      <div style={style22.popup}>
+                        <p style={{marginTop:'4%'}}>{datamessage}</p>
+                        <center><button class="ai-button" onClick={(e) => {setvisible(null)}}>cerrar</button></center>
+                      </div>
+        )}
+
         <div style={stile}>
             <div >
                 {/*debemos pasarle las funciones para que funcione como menu*/}
@@ -205,10 +247,10 @@ const Dash_empresa = () => {
             {page === 'generar' ? <InterviewSelector2 main={main} recluiter={recluiter} empresa={config.empresa}/> : null}
             {page === 'historial' && <Generated_tests main={main} />}
             {page === 'message_config' && (
-            <div style={{marginBottom:'5%'}}>
+            <div style={{marginBottom:'5%', marginLeft:'2%'}}>
             <div class="tab-container">
-        <button class="tab" onClick={(e) => {setMessageEdit(true)}}>Edición</button>
-        <button class="tab" onClick={(e) => {setMessageEdit(false)}}>Vista Previa</button>
+        <button class="tab" style={ selected == 'edit' ? {backgroundColor: 'rgba(128, 128, 128, 0.5)'} : {}} onClick={(e) => {setMessageEdit(true); setSelected('edit')}}>Edición</button>
+        <button class="tab" style={ selected == 'vista' ? {backgroundColor: 'rgba(128, 128, 128, 0.5)'} : {}} onClick={(e) => {setMessageEdit(false); setSelected('vista')}}>Vista Previa</button>
     </div>
     {messageEdit ? <div id="edit-section" style={{marginTop:'5%'}}>
         <h2 class="section-title">
@@ -224,10 +266,10 @@ const Dash_empresa = () => {
             <div id="companyDescription" class="editor-container">
                 <textarea name={'companyDescription'} onChange={(e) => {setdescripción_empresa(e.target.value)}} value={descripción_empresa} style={{width: '100%', height: '100%', resize: 'none'}}></textarea>
             </div>
-            <button onClick={(e) => {generarTexto('descripcion')}} class="ai-button" >
+            <button onClick={(e) => {generarTexto('descripcion', 1)}} class="ai-button" >
                 <span  class="material-icons">smart_toy</span>
                 Generar con IA
-                {login1 == true && <Loader/>}
+                {(login1 == true && clicked == 1) && <Loader/>}
             </button>
         </div>
 
@@ -240,10 +282,10 @@ const Dash_empresa = () => {
             <div id="testDescription" class="editor-container">
             <textarea name={'testDescription'} onChange={(e) => {setdescripción_prueba(e.target.value)}} value={descripción_prueba} style={{width: '100%', height: '100%', resize: 'none'}}></textarea>
             </div>
-            <button onClick={(e) => {generarTexto('descripcion prueba')}} class="ai-button" >
+            <button onClick={(e) => {generarTexto('descripcion prueba', 2)}} class="ai-button" >
                 <span class="material-icons">smart_toy</span>
                 Generar con IA
-                {login1 == true && <Loader/>}
+                {(login1 == true && clicked == 2) && <Loader/>}
             </button>
         </div>
 
@@ -311,10 +353,10 @@ const Dash_empresa = () => {
             <div id="recruiterMessage" class="editor-container">
             <textarea name={'recruiterMessage'} onChange={(e) => {setmensaje_personal(e.target.value)}} value={mensaje_personal} style={{width: '100%', height: '100%', resize: 'none'}}></textarea>
             </div>
-            <button onClick={(e) => {generarTexto('mensaje personal')}} class="ai-button" >
+            <button onClick={(e) => {generarTexto('mensaje personal', 3)}} class="ai-button" >
                 <span class="material-icons">smart_toy</span>
                 Generar con IA
-                {login1 == true && <Loader/>}
+                {(login1 == true && clicked == 3) && <Loader/>}
             </button>
         </div>
 
@@ -326,9 +368,10 @@ const Dash_empresa = () => {
                 <span class="badge">Variable predefinida</span>
             </div>
         </div>
-        <button class="ai-button"  onClick={(e) => {(guardarConfig())}}>
+        <button class="ai-button"  onClick={(e) => {(guardarConfig(4))}}>
                     <span className="material-icons">save</span>
                     Guardar Cambios
+                    {(login1 == true && clicked == 4) && <Loader/>}
         </button>
     </div> : (<>
     <div id="preview-section" class="preview-section" style={{marginTop:'5%'}}>
@@ -373,9 +416,10 @@ const Dash_empresa = () => {
                 </div>
             </div>
         </div>
-        <button class="ai-button"  onClick={(e) => {(guardarConfig())}}>
+        <button class="ai-button"  onClick={(e) => {(guardarConfig(5))}}>
                     <span className="material-icons">save</span>
                     Guardar Cambios
+                    {(login1 == true && clicked == 5) && <Loader/>}
         </button>
     </div>
     </>)}
@@ -383,7 +427,7 @@ const Dash_empresa = () => {
             )}
             {page == 'feedbacks' && (
             <div style={{width:'100%'}}>
-            <Feedbacks/>
+            <Feedbacks detailed={detailed}/>
             </div>)}
         </div> : <h2> Cargando ...</h2>}
             </div>

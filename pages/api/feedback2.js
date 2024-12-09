@@ -130,7 +130,7 @@ const notificar_recluiter = (mail_recluiter, prueba_id, mail_candidato, inicio) 
             </table>
             
             <div style="text-align: center;">
-                <a href="${BaseUrl}/dash_empresa" style="color: #ffffff;" class="button">Ver resultados y feedback</a>
+                <a href="${BaseUrl}/dash_empresa?prueba=${prueba_id}" style="color: #ffffff;" class="button">Ver resultados y feedback</a>
             </div>
 
             <p>Puedes acceder a la plataforma para:</p>
@@ -425,12 +425,6 @@ const handler = async (req, res) => {
         // verificar si existen las respuestas
         if(rows.length > 0){
             let respuesta = rows[0]
-            //necesitamos emparejar pregunta con array
-            //console.log(respuesta)
-            //console.log('verificando si puedo ver que el inicio sea una fecha valida:', respuesta.inicio instanceof Date)
-            //console.log('verificando si puedo ver que el termino sea una fecha valida:', new Date(respuesta.termino) )
-            //console.log('EL TERMINO ES ', respuesta.termino , 'tipo:', respuesta.termino == false)
-            const inicio = new Date(respuesta.inicio)
             const fecha = new Date(respuesta.termino)
             if(isNaN(fecha.getTime())){
                 respuestas = extraerTextos(rows[0].respuestas)
@@ -642,71 +636,19 @@ const handler = async (req, res) => {
             const suma = puntajes.reduce((acumulador, valorActual) => acumulador + valorActual, 0)
             const promedio = parseInt(suma / puntajes.length)
             const [result] = await connection.query('UPDATE respuestas SET feedbacks = ?, puntaje_final = ?, termino = ? WHERE id_respuesta = ?', [feedbacks.join('@ @'), ((promedio >= 0) ? promedio : 0), new Date(),`${prueba_id}${mail_candidato}`])
-            /*
-            for(let respuesta of respuestas){
-                ////////////////////////
-                console.log('Respuesta!!! :', respuesta)
-                
-                for(let preg of preguntas){
-                    const completion = await openai.chat.completions.create({
-                        model: "gpt-4o",
-                        messages: [{
-                          role: "system",
-                          content: `Eres un CTO experto en entrevistas técnicas para ${interviewType}. Tu tarea es proporcionar un feedback detallado y una puntuación precisa para la respuesta de ${mail_candidato} a la siguiente pregunta. El nivel esperado del candidato es ${level}. Las tecnologías evaluadas son: ${tecnologies.join(', ')}.
-                         Instrucciones para Evaluación de Respuestas:
-                        Proporciona Feedback: Ofrece comentarios constructivos y empáticos.
-                        Identifica Fortalezas y Áreas de Mejora:
-                        Puntos Fuertes: Identifica y describe tres puntos fuertes de la respuesta, utilizando el formato: <puntofuerte> (punto fuerte identificado) <puntofuerte>.
-                        asegurate de encerrar cada punto fuerte entre etiquetas <puntofuerte>
-                        Puntos Débiles: Señala y explica tres puntos débiles, usando el formato: <puntodebil> (punto debil identificado) <puntodebil>.
-                        asegurate de encerrar cada punto debil entre etiquetas <puntodebil>
-                        Ofrece Sugerencias: Proporciona recomendaciones concretas para mejorar la respuesta o profundizar en el tema.
-                        Asignación de Puntuación: Evalúa la calidad y precisión de la respuesta con una puntuación del 0 al 100. Especifica la puntuación al final del feedback en el formato: Puntuación: X donde X es el numero (No agregues ningún caracter extra al devolver la puntuacion ya que se utiliza para evaluar regex)
-                        Si la respuesta es "No lo sé" o similar, la puntuación debe ser 0.
-                        Comentario General: Incluye un comentario general sobre la respuesta utilizando el formato: <comentario> comentario <comentario>.
-                        Sé justo y preciso en tu evaluación.`
-                            
-                        },
-                        {
-                          role: "user",
-                          content: `Pregunta: ${preg}\n\nRespuesta: ${respuesta}`
-                        }],
-                        max_tokens: 500,
-                    });
-                    
-                    const feedbackContent = completion.choices[0].message.content.trim()
-                    console.log(feedbackContent)
-                    console.log('la respuesta fue:', respuesta)
-                    const scoreMatch = feedbackContent.match(/Puntuación:\s*(\d+)/)
-                    let cc = extraerTextosEntreEtiquetas3(feedbackContent)
-                    comentariosobrerespuestas.push(cc)
-                    puntosdebiles = extraerTextosEntreEtiquetas(feedbackContent)
-                    puntosfuertes = extraerTextosEntreEtiquetas2(feedbackContent)
-                    feedbacks.push(eliminarTextosEntreEtiquetas4(feedbackContent))
-                    console.log('el scorematch: ', feedbackContent.match(/Puntuación:\s*(\d+)/))
-                    let puntaje = scoreMatch ? parseInt(scoreMatch[1], 10) : 50
-                    puntajes.push(puntaje)
-                }
-            }*/
-            //console.log('PUNTAJES', puntajes)
-            //const suma = puntajes.reduce((acumulador, valorActual) => acumulador + valorActual, 0)
-            //console.log('suma', suma)
-            //const promedio = parseInt(suma / puntajes.length)
-            //console.log('promedio', promedio)
-            //const [result] = await connection.query('UPDATE respuestas SET feedbacks = ?, puntaje_final = ?, termino = ? WHERE id_respuesta = ?', [feedbacks.join('@ @'), ((promedio >= 0) ? promedio : 0), new Date(),`${prueba_id}${mail_candidato}`])
-            //res.status(200).json({ feedbacks, puntajes, puntuación : promedio, puntosdebiles, puntosfuertes })
             
             notificar_candidato(prueba_id, mail_candidato)
             
+            const [daa] = await connection.query('SELECT inicio from respuestas where id_respuesta = ?', [`${prueba_id}${mail_candidato}`])
+            let inicio = daa.inicio
+            console.log(daa[0].inicio)
             notificar_recluiter(mail_recluiter, prueba_id, mail_candidato, inicio)
 
             res.status(200).json({ feedbacks, puntajes, puntuación : promedio, puntosdebiles, puntosfuertes })
           }
             if(!isNaN(fecha.getTime())){
               notificar_candidato(prueba_id, mail_candidato)
-            
               notificar_recluiter(mail_recluiter, prueba_id, mail_candidato, inicio)
-
                 res.status(402).json({ message: 'Test ya finalizado' })
             }
         }

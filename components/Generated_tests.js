@@ -10,6 +10,7 @@ import {
   } from '@mui/material';
 import { useAuth } from '../components/AuthProvider';
 import { useRouter } from "next/router";
+import Loader from "./Loader";
 
 
 
@@ -276,9 +277,8 @@ const Detail = (props) => {
 
 
 const Generated_tests = (props) => {
-    // recibe mail
     const [detail, setDetail] = useState()
-    const [lista, setLista] = useState([])
+    const [lista, setLista] = useState([0])
     const [info, setInfo] = useState()
     const [search_test, setsearch_test] = useState('')
     const [search_cetegoria, setsearch_cetegoria] = useState('')
@@ -457,7 +457,7 @@ const Generated_tests = (props) => {
                   :
                   <>
                 {
-                    lista.length > 0 ? 
+                    lista.length > 0 && lista[0] != 0  ? 
                     (
                     <table class="tests-table">
                     <thead>
@@ -499,7 +499,13 @@ const Generated_tests = (props) => {
                                 </td>
                             </tr>)
                         })
-                    }</tbody></table>) : <div>No hay exemenes todavía</div>
+                    }</tbody></table>) : <>
+                    {
+                     lista.length == 0 && lista[0] != 0 ? 
+                     <>No hay examenes generados</> 
+                     : <Loader/> 
+                    }
+                    </>
                 }
                 </>
               }

@@ -52,7 +52,7 @@ const handler = async (req, res) => {
             </div>
             
             <div style="text-align: center;">
-                <a href="${BaseUrl}/dash_user?token=${token}" class="button">Acceder a Sparring</a>
+                <a href="${BaseUrl}/dash_user2?token=${token}&candidato=${mail}&page=config" class="button">Acceder a Sparring</a>
             </div>
 
             <div class="security-note">

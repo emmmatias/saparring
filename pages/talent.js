@@ -27,6 +27,7 @@ import { marked } from 'marked'
 //import 'ace-builds/src-noconflict/theme_monokai';
 import '@/components/video.module.css'
 import './talent.module.css'
+import Loader from '@/components/Loader';
 
 
 function extraerTextos(texto) {
@@ -79,7 +80,8 @@ const Talent = () => {
     const [pruebas, setpruebas] = useState() 
     const [feedbacks,setfeedbacks] = useState()
     const [config2 , setconfig2] = useState()
-    const streamRef = useRef(null);
+    const streamRef = useRef(null)
+    const [ready , setReady] = useState(false)
     const [isMediaAvailable, setIsMediaAvailable] = useState({ audio: false, video: false });
     const [mediaBlob, setMediaBlob] = useState(null);
     const { isAuthenticated, login, logout, user, userType } = useAuth()
@@ -87,7 +89,7 @@ const Talent = () => {
     const [audioBlob, setAudioBlob] = useState(null);
     const [videoBlob, setVideoBlob] = useState(null);
     const [loaded, setLoaded] = useState(false);
-
+    const videoRef = useRef(null)
     //*********************** video
 
     useEffect(() => {
@@ -160,8 +162,11 @@ const Talent = () => {
                 audio: isMediaAvailable.audio ? true : false, // Asegúrate de que esto sea correcto
                 video: true
             };
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            mediaRecorderVideo.current = new MediaRecorder(stream);
+            const stream = await navigator.mediaDevices.getUserMedia(constraints)
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            mediaRecorderVideo.current = new MediaRecorder(stream)
             const videoChunks = [];
     
             mediaRecorderVideo.current.ondataavailable = event => {
@@ -198,149 +203,10 @@ const Talent = () => {
             await startRecordingAudio()
             await startRecordingVideo();
         }
-    };
-
-
-      /*
-      const startRecordingAudio = async () => {
-        if(audioBlob){
-            setAudioBlob(null);
-        }
-        if(isMediaAvailable.audio){
-            const constraints = {
-                audio: isMediaAvailable.audio,
-              }
-              const stream = await navigator.mediaDevices.getUserMedia(constraints);
-              mediaRecorderAudio.current = new MediaRecorder(stream);
-              const audioChunks = [];
-              mediaRecorderAudio.current.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data)
-                }
-              }
-              mediaRecorderAudio.current.onstop = () => {
-                if (audioChunks.length > 0) {
-                  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                  setAudioBlob(audioBlob);
-                }
-              }
-              mediaRecorderAudio.current.start();
-              setIsRecording(true);
-        }
-      }
-
-      const startRecordingVideo = async () => {
-        if(videoBlob){
-            setVideoBlob(null);
-        }
-        if(isMediaAvailable.video){
-            const constraints = {
-                audio: isMediaAvailable.audio,
-                video: isMediaAvailable.video
-              }
-              const stream = await navigator.mediaDevices.getUserMedia(constraints);
-              mediaRecorderVideo.current = new MediaRecorder(stream);
-              const videoChunks = [];
-              mediaRecorderVideo.current.ondataavailable = event => {
-                if (event.data.size > 0) {
-                  if (isMediaAvailable.video) {
-                    videoChunks.push(event.data);
-                  }
-                }
-              }
-              mediaRecorderVideo.current.onstop = () => {
-                if (videoChunks.length > 0) {
-                  const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-                  setVideoBlob(videoBlob);
-                }
-              }
-              mediaRecorderVideo.current.start();
-              setIsRecording(true);
-        }
-      }
-
-      const startRecording = async () => {
-        
-        // Eliminar grabaciones anteriores
-        if(audioBlob){
-            setAudioBlob(null);
-        }
-        if(videoBlob){
-            setVideoBlob(null);
-        }
-        if(isMediaAvailable.audio && !isMediaAvailable.video){
-            startRecordingAudio()
-        }
-        if(isMediaAvailable.video){
-            stertRecordingVideo()
-        }
-        /*
-        if(isMediaAvailable.audio && !isMediaAvailable.video){
-            const constraints = {
-                audio: isMediaAvailable.audio,
-              }
-              const stream = await navigator.mediaDevices.getUserMedia(constraints);
-              mediaRecorderRef.current = new MediaRecorder(stream);
-              const audioChunks = [];
-              mediaRecorderRef.current.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data)
-                }
-              }
-              mediaRecorderRef.current.onstop = () => {
-                if (audioChunks.length > 0) {
-                  const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                  setAudioBlob(audioBlob);
-                }
-              }
-              mediaRecorderRef.current.start();
-              setIsRecording(true);
-        }*/
-        /*
-        if(isMediaAvailable.video){
-            const constraints = {
-                audio: isMediaAvailable.audio,
-                video: isMediaAvailable.video
-              }
-              const stream = await navigator.mediaDevices.getUserMedia(constraints);
-              mediaRecorderRef.current = new MediaRecorder(stream);
-              const audioChunks = [];
-              const videoChunks = [];
-              mediaRecorderRef.current.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    if (isMediaAvailable.audio) {
-                    audioChunks.push(event.data);
-                  }
-                  if (isMediaAvailable.video) {
-                    videoChunks.push(event.data);
-                  }
-                }
-              }
-              mediaRecorderRef.current.onstop = () => {
-                if (audioChunks.length > 0) {
-                  const audioBlob = new Blob(audioChunks, { type: 'audio/webm; codecs=opus' });
-                  setAudioBlob(audioBlob);
-                }
-                if (videoChunks.length > 0) {
-                  const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-                  setVideoBlob(videoBlob);
-                }
-              }
-              mediaRecorderRef.current.start();
-              setIsRecording(true);
-        }*//*
-      }
-    
-      const stopRecording = () => {
-        mediaRecorderVideo.current.stop()
-        mediaRecorderAudio.current.stop()
-        setIsRecording(false);
-      };*/
-
+    }
 
       const handleSubmit = async () => {
         const formData = new FormData();
-    
         if (audioBlob) {
             console.log('HAY AUDIOBLOB', audioBlob.type)
           formData.append('file', audioBlob, 'recorded_audio.webm')
@@ -351,7 +217,6 @@ const Talent = () => {
           alert('Error al enviar: no hay audio grabado.');
           return;
         }
-        
         try {
             
           const response = await fetch('/api/video', {
@@ -370,7 +235,8 @@ const Talent = () => {
         } catch (error) {
           console.error('Error during submission:', error);
         }
-      };
+        setReady(true)
+      }
 
     //****************** video
 
@@ -400,6 +266,9 @@ const Talent = () => {
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
         }
+        if (videoRef.current) {
+            videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+          }
     };
 
     const openModal = () => {
@@ -565,6 +434,7 @@ const Talent = () => {
 
     const modalStyles = {
         position: 'fixed',
+        textAlign: 'center',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
@@ -591,6 +461,7 @@ const Talent = () => {
         })
         if(response.ok){
             console.log('registro actualizado')
+            setReady(false)
         }
     }
 
@@ -754,13 +625,6 @@ const Talent = () => {
             }
     }
 
-    /*useEffect(() => {
-        if(step == 3){
-            console.log('FINALIZAR POR STEP')
-            finalizar()
-        }
-    }, [step])*/
-
     useEffect(() => {
         console.log('respuestas', respuestas)
     },[respuestas])
@@ -820,23 +684,8 @@ const Talent = () => {
             </center>
             </div>
             </div>}
-        {/* MENU */}
         {
             prueba_id && prueba ? <div>
-
-        {/*<h1 class="title has-text-centered mt-4">Área de Candidato</h1>
-        <div class="tabs is-centered">
-            <ul>
-                <li><a onClick={(e) => {setPage('registro')}}>Mi perfil</a></li>
-                <li><a onClick={(e) => {setPage('sparring')}}>Mi prueba</a></li>
-                <li><a disabled={!feedback} onClick={(e) => {setPage('feedback')}}>Mi feedback</a></li>
-                <li><a>Mi contacto</a></li>
-            </ul>
-        </div>*/}
-
-        {/* AREA DE REGISTRO DE DATOS */}
-
-        {/* AREA DE PRUEBA */}
             {
                 Page == 'sparring' && (
                     <>
@@ -1087,24 +936,26 @@ const Talent = () => {
                                                 </textarea>
                                                 </>) : <div>
                                                 {/*grabador de video*/}
-                                            <button onClick={(e) => {setIsOpen(true); setTexto(false)}}>Grabar Video</button>
+                                            
                                             {isOpen && (
                                             <div style={modalStyles}>
                                                 <div className='div'>
+                                                {(isMediaAvailable.video && !
+                                                videoBlob) && 
+                                            
+                                            <video ref={videoRef} autoPlay muted playsInline style={{height:'50%', width: '50%' }} />
+                                            }
                                                 {isMediaAvailable.audio ? (
                                                     <div>
                                                     {audioBlob && (
                                                         <div>
                                                         {videoBlob ? (
                                                             <>
-                                                                <video controls>
+                                                                <video style={{height:'50%', width: '50%' }} controls>
                                                                     <source src={URL.createObjectURL(videoBlob)} type="video/webm" />
                                                                     Your browser does not support the video element.
                                                                 </video>
-                                                                <audio controls>
-                                                                <source src={URL.createObjectURL(audioBlob)} type="audio/webm" />
-                                                                Your browser does not support the audio element.
-                                                                </audio></>
+                                                                </>
                                                             ) : (
                                                             <>
                                                             {
@@ -1120,8 +971,8 @@ const Talent = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <button onClick={isRecording ? stopRecording : startRecording}>
-                                                        {isRecording ? 'Stop Recording' : 'Start Recording'}
+                                                    <button className='ai-button' onClick={isRecording ? stopRecording : startRecording}>
+                                                        {isRecording ? 'Detener grabación' : 'Comenzar Grabación'}
                                                     </button>
                                                     </div>
                                                 ) : (
@@ -1134,14 +985,13 @@ const Talent = () => {
                                                     />
                                                     </div>
                                                 )}
-                                                <button onClick={handleSubmit}>ENVIAR!</button>
+                                                <button className='ai-button' onClick={handleSubmit}>Procesar</button>
                                                 </div>
-                                                {videoBlob && (
-                                                    <div>
-                                                        <button onClick={handleUpload}>Enviar respuesta</button>
-                                                    </div>
-                                                )}
-                                                <button onClick={(e) => {setIsOpen(false); setTexto(true)}}>Cerrar</button>
+                                                {(audioBlob && ready == true) && <div>
+                                                    <p>¡Listo! ya puedes cerrar esta ventana</p>
+                                                    <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true)}}>Guardar</button>
+                                                </div>}
+                                                <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true); setTextinput('')}}>Cancelar</button>
                                             </div>
                                             )}
                                         </div>}
@@ -1164,24 +1014,25 @@ const Talent = () => {
                                                 </textarea>
                                                 </>) : <div>
                                                 {/*grabador de video*/}
-                                            <button onClick={(e) => {setIsOpen(true); setTexto(false)}}>Grabar Video</button>
-                                            {isOpen && (
+                                                {isOpen && (
                                             <div style={modalStyles}>
                                                 <div className='div'>
+                                                {(isMediaAvailable.video && !
+                                                videoBlob) && 
+                                            
+                                            <video ref={videoRef} autoPlay muted playsInline style={{height:'50%', width: '50%' }} />
+                                            }
                                                 {isMediaAvailable.audio ? (
                                                     <div>
                                                     {audioBlob && (
                                                         <div>
                                                         {videoBlob ? (
                                                             <>
-                                                                <video controls>
+                                                                <video style={{height:'50%', width: '50%' }} controls>
                                                                     <source src={URL.createObjectURL(videoBlob)} type="video/webm" />
                                                                     Your browser does not support the video element.
                                                                 </video>
-                                                                <audio controls>
-                                                                <source src={URL.createObjectURL(audioBlob)} type="audio/webm" />
-                                                                Your browser does not support the audio element.
-                                                                </audio></>
+                                                                </>
                                                             ) : (
                                                             <>
                                                             {
@@ -1197,8 +1048,8 @@ const Talent = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <button onClick={isRecording ? stopRecording : startRecording}>
-                                                        {isRecording ? 'Stop Recording' : 'Start Recording'}
+                                                    <button className='ai-button' onClick={isRecording ? stopRecording : startRecording}>
+                                                        {isRecording ? 'Detener grabación' : 'Comenzar Grabación'}
                                                     </button>
                                                     </div>
                                                 ) : (
@@ -1211,14 +1062,13 @@ const Talent = () => {
                                                     />
                                                     </div>
                                                 )}
-                                                <button onClick={handleSubmit}>ENVIAR!</button>
+                                                <button className='ai-button' onClick={handleSubmit}>Procesar</button>
                                                 </div>
-                                                {videoBlob && (
-                                                    <div>
-                                                        <button onClick={handleUpload}>Enviar respuesta</button>
-                                                    </div>
-                                                )}
-                                                <button onClick={(e) => {setIsOpen(false); setTexto(true)}}>Cerrar</button>
+                                                {(audioBlob && ready == true) && <div>
+                                                    <p>¡Listo! ya puedes cerrar esta ventana</p>
+                                                    <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true)}}>Guardar</button>
+                                                </div>}
+                                                <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true); setTextinput('')}}>Cancelar</button>
                                             </div>
                                             )}
                                         </div>}
@@ -1239,24 +1089,25 @@ const Talent = () => {
                                                 </textarea>
                                                 </>) : <div>
                                                 {/*grabador de video*/}
-                                            <button onClick={(e) => {setIsOpen(true); setTexto(false)}}>Grabar Video</button>
-                                            {isOpen && (
+                                                {isOpen && (
                                             <div style={modalStyles}>
                                                 <div className='div'>
+                                                {(isMediaAvailable.video && !
+                                                videoBlob) && 
+                                            
+                                            <video ref={videoRef} autoPlay muted playsInline style={{height:'50%', width: '50%' }} />
+                                            }
                                                 {isMediaAvailable.audio ? (
                                                     <div>
                                                     {audioBlob && (
                                                         <div>
                                                         {videoBlob ? (
                                                             <>
-                                                                <video controls>
+                                                                <video style={{height:'50%', width: '50%' }} controls>
                                                                     <source src={URL.createObjectURL(videoBlob)} type="video/webm" />
                                                                     Your browser does not support the video element.
                                                                 </video>
-                                                                <audio controls>
-                                                                <source src={URL.createObjectURL(audioBlob)} type="audio/webm" />
-                                                                Your browser does not support the audio element.
-                                                                </audio></>
+                                                                </>
                                                             ) : (
                                                             <>
                                                             {
@@ -1272,8 +1123,8 @@ const Talent = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <button onClick={isRecording ? stopRecording : startRecording}>
-                                                        {isRecording ? 'Stop Recording' : 'Start Recording'}
+                                                    <button className='ai-button' onClick={isRecording ? stopRecording : startRecording}>
+                                                        {isRecording ? 'Detener grabación' : 'Comenzar Grabación'}
                                                     </button>
                                                     </div>
                                                 ) : (
@@ -1286,14 +1137,13 @@ const Talent = () => {
                                                     />
                                                     </div>
                                                 )}
-                                                <button onClick={handleSubmit}>ENVIAR!</button>
+                                                <button className='ai-button' onClick={handleSubmit}>Procesar</button>
                                                 </div>
-                                                {videoBlob && (
-                                                    <div>
-                                                        <button onClick={handleUpload}>Enviar respuesta</button>
-                                                    </div>
-                                                )}
-                                                <button onClick={(e) => {setIsOpen(false); setTexto(true)}}>Cerrar</button>
+                                                {(audioBlob && ready == true) && <div>
+                                                    <p>¡Listo! ya puedes cerrar esta ventana</p>
+                                                    <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true)}}>Guardar</button>
+                                                </div>}
+                                                <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true); setTextinput('')}}>Cancelar</button>
                                             </div>
                                             )}
                                         </div>}
@@ -1314,24 +1164,25 @@ const Talent = () => {
                                                 </textarea>
                                                 </>) : <div>
                                                 {/*grabador de video*/}
-                                            <button onClick={(e) => {setIsOpen(true); setTexto(false)}}>Grabar Video</button>
-                                            {isOpen && (
+                                                {isOpen && (
                                             <div style={modalStyles}>
                                                 <div className='div'>
+                                                {(isMediaAvailable.video && !
+                                                videoBlob) && 
+                                            
+                                            <video ref={videoRef} autoPlay muted playsInline style={{height:'50%', width: '50%' }} />
+                                            }
                                                 {isMediaAvailable.audio ? (
                                                     <div>
                                                     {audioBlob && (
                                                         <div>
                                                         {videoBlob ? (
                                                             <>
-                                                                <video controls>
+                                                                <video style={{height:'50%', width: '50%' }} controls>
                                                                     <source src={URL.createObjectURL(videoBlob)} type="video/webm" />
                                                                     Your browser does not support the video element.
                                                                 </video>
-                                                                <audio controls>
-                                                                <source src={URL.createObjectURL(audioBlob)} type="audio/webm" />
-                                                                Your browser does not support the audio element.
-                                                                </audio></>
+                                                                </>
                                                             ) : (
                                                             <>
                                                             {
@@ -1347,8 +1198,8 @@ const Talent = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <button onClick={isRecording ? stopRecording : startRecording}>
-                                                        {isRecording ? 'Stop Recording' : 'Start Recording'}
+                                                    <button className='ai-button' onClick={isRecording ? stopRecording : startRecording}>
+                                                        {isRecording ? 'Detener grabación' : 'Comenzar Grabación'}
                                                     </button>
                                                     </div>
                                                 ) : (
@@ -1361,14 +1212,13 @@ const Talent = () => {
                                                     />
                                                     </div>
                                                 )}
-                                                <button onClick={handleSubmit}>ENVIAR!</button>
+                                                <button className='ai-button' onClick={handleSubmit}>Procesar</button>
                                                 </div>
-                                                {videoBlob && (
-                                                    <div>
-                                                        <button onClick={handleUpload}>Enviar respuesta</button>
-                                                    </div>
-                                                )}
-                                                <button onClick={(e) => {setIsOpen(false); setTexto(true)}}>Cerrar</button>
+                                                {(audioBlob && ready == true) && <div>
+                                                    <p>¡Listo! ya puedes cerrar esta ventana</p>
+                                                    <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true)}}>Guardar</button>
+                                                </div>}
+                                                <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true); setTextinput('')}}>Cancelar</button>
                                             </div>
                                             )}
                                         </div>}
@@ -1390,24 +1240,25 @@ const Talent = () => {
                                                 </textarea>
                                                 </>) : <div>
                                                 {/*grabador de video*/}
-                                            <button onClick={(e) => {setIsOpen(true); setTexto(false)}}>Grabar Video</button>
-                                            {isOpen && (
+                                                {isOpen && (
                                             <div style={modalStyles}>
                                                 <div className='div'>
+                                                {(isMediaAvailable.video && !
+                                                videoBlob) && 
+                                            
+                                            <video ref={videoRef} autoPlay muted playsInline style={{height:'50%', width: '50%' }} />
+                                            }
                                                 {isMediaAvailable.audio ? (
                                                     <div>
                                                     {audioBlob && (
                                                         <div>
                                                         {videoBlob ? (
                                                             <>
-                                                                <video controls>
+                                                                <video style={{height:'50%', width: '50%' }} controls>
                                                                     <source src={URL.createObjectURL(videoBlob)} type="video/webm" />
                                                                     Your browser does not support the video element.
                                                                 </video>
-                                                                <audio controls>
-                                                                <source src={URL.createObjectURL(audioBlob)} type="audio/webm" />
-                                                                Your browser does not support the audio element.
-                                                                </audio></>
+                                                                </>
                                                             ) : (
                                                             <>
                                                             {
@@ -1423,8 +1274,8 @@ const Talent = () => {
                                                         </div>
                                                     )}
                                                     
-                                                    <button onClick={isRecording ? stopRecording : startRecording}>
-                                                        {isRecording ? 'Stop Recording' : 'Start Recording'}
+                                                    <button className='ai-button' onClick={isRecording ? stopRecording : startRecording}>
+                                                        {isRecording ? 'Detener grabación' : 'Comenzar Grabación'}
                                                     </button>
                                                     </div>
                                                 ) : (
@@ -1437,14 +1288,13 @@ const Talent = () => {
                                                     />
                                                     </div>
                                                 )}
-                                                <button onClick={handleSubmit}>ENVIAR!</button>
+                                                <button className='ai-button' onClick={handleSubmit}>Procesar</button>
                                                 </div>
-                                                {videoBlob && (
-                                                    <div>
-                                                        <button onClick={handleUpload}>Enviar respuesta</button>
-                                                    </div>
-                                                )}
-                                                <button onClick={(e) => {setIsOpen(false); setTexto(true)}}>Cerrar</button>
+                                                {(audioBlob && ready == true) && <div>
+                                                    <p>¡Listo! ya puedes cerrar esta ventana</p>
+                                                    <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true)}}>Guardar</button>
+                                                </div>}
+                                                <button className='ai-button' onClick={(e) => {setIsOpen(false); setTexto(true); setTextinput('')}}>Cancelar</button>
                                             </div>
                                             )}
                                         </div>}
@@ -1455,7 +1305,7 @@ const Talent = () => {
                         </Grid2>
                     </Grid2>
                     <div class="navigation-buttons" style={{backgroundColor:'white'}}>
-                    <div class="nav-group">
+                    {isOpen == false && <div class="nav-group">
                         {
                             preguntas[current_cuestion].tipo == 'Pruebas Tipo Test' &&
                             <>
@@ -1482,7 +1332,7 @@ const Talent = () => {
                         </Button>}
                         </>}
                     
-                </div>
+                    </div>}
                     </div>
                     </div>
                 )
@@ -1490,17 +1340,19 @@ const Talent = () => {
                     </div>}
                     {
                         step == 3 && 
-                        <div>
-                        <h1>Test ya finalizado</h1>
-                        <h3>El reclutador ya ha recibido la evaluacion y el resultado.</h3>
-                        <h4>Revisa tu email, el reclutador puede enviarte los resultados de tu test</h4>
+                        <div className="container" style={{textAlign: "center", height:'100vh'}}>
+                            <Paper elevation={3} sx={{ p: 4, maxWidth: '90%', mx: 'auto', mt: 8 }}>
+                            <h1 class="header-title" style={{color: "#1976d2"}}>Test ya finalizado</h1>
+                            <p>El reclutador ya ha recibido la evaluacion y el resultado.</p>
+                            <p>Revisa tu email, el reclutador puede enviarte los resultados de tu test</p>
+                            </Paper>
                         </div>
                     }
                     </>
                 )
             }
-            </div> : <div>
-
+            </div> : <div style={{height:'100vh', textAlign: "center"}}>
+                <Loader/>
             </div>
         }
         </>

@@ -450,6 +450,12 @@ const Feedbacks = (props) => {
         if(response.ok){
             let data = await response.json()
             setResult(data.feedbacks)
+            console.log(data.feedbacks)
+            if(props.detailed.length > 0){
+                console.log()
+                const index = data.feedbacks.findIndex(obj => obj.id_prueba == props.detailed)
+                setDetail([data.feedbacks[index]])
+            }
         }
         if(!response.ok){
             let data = await response.json()
@@ -733,7 +739,11 @@ const Feedbacks = (props) => {
             </table>
             </div> :
             <>
-            <Loader/></>
+            {
+                result.length == 0 ? <>No hay Feedbacks disponibles</> :
+                <Loader/>
+            }
+            </>
             }
             </>
             }

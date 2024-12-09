@@ -3,10 +3,7 @@ import { fabClasses, Paper } from "@mui/material"
 import { useState, useEffect} from "react"
 import { useAuth } from '../components/AuthProvider';
 import { useRouter } from "next/router";
-
-
-
-
+import { transform } from "next/dist/build/swc";
 
 
 const Altas_empresas = () => {
@@ -100,9 +97,10 @@ const Altas_empresas = () => {
                 })
             })
             if(response.ok){
-                router.push('/dash_empresa')
+                router.push('/')
             }else{
-                alert('Error al actualizar')
+                setMessage(`Algo salió mal: ${data.error}`)
+                setIsOpen(true)
             }
         }
         if(!isAuthenticated){
@@ -130,8 +128,14 @@ const Altas_empresas = () => {
                 setStep(1)
             }if(!response.ok){
                 let data = await response.json()
+                if(reclutadores.length == 0){
+                    setMessage(`¡Momento!: Debes añadir aunque sea un Recluiter`)
+                    setIsOpen(true)
+                }
+                else if(reclutadores.length > 0){
                 setMessage(`Algo salió mal: ${data.error}`)
                 setIsOpen(true)
+            }
             }
         }
     }
@@ -209,7 +213,6 @@ const Altas_empresas = () => {
     };
 
     const añadir_recluiter = async () => {
-
     let obj = {
             logo: logorec ? await renderLogo(logorec) : undefined,
             reclutador_nombre,
@@ -220,16 +223,14 @@ const Altas_empresas = () => {
             reclutador_email,
             reclutador_red
     }
-    
     setReclutadores(prev => [...prev, obj]) 
     setLogorec()
-    setReclutador_apellido()
-    setReclutador_nombre()
-    setReclutador_posicion()
-    setReclutador_telefono()
-    setReclutador_email()
-    setReclutador_red()
-
+    setReclutador_apellido('')
+    setReclutador_nombre('')
+    setReclutador_posicion('')
+    setReclutador_telefono('')
+    setReclutador_email('')
+    setReclutador_red('')
     }
 
     useEffect(() => {
@@ -240,8 +241,9 @@ const Altas_empresas = () => {
             display: 'block', 
             position: 'fixed',
             zIndex: 1000, 
-            left: '35%',
-            top: '40%',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
             textAlign: 'center',
             backgroundColor: 'white', 
             borderColor: 'black',

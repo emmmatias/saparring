@@ -27,7 +27,7 @@ function MyApp({ Component, pageProps }) {
                 {router.pathname != '/CommingSoon' ? <FooterElement /> : null}
                 <CssBaseline />
             </ThemeProvider>
-        </AuthProvider>
+    </AuthProvider>
   )
 }
 
